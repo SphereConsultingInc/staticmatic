@@ -1,10 +1,11 @@
 module StaticMatic::BuildMixin
-    
-  def build
+
+  def build(options = {})
+    @global_locals.merge!(options[:locals]) if options[:locals].is_a? Hash
     build_css
     build_html
   end
-    
+
   # Build HTML from the source files
   def build_html
     Dir["#{@src_dir}/pages/**/*.haml"].each do |path|
@@ -18,13 +19,13 @@ module StaticMatic::BuildMixin
   def build_css
     Dir["#{@src_dir}/stylesheets/**/*.{sass,scss}"].each do |path|
       file_dir, template = source_template_from_path(path.sub(/^#{@src_dir}\/stylesheets/, ''))
-      
+
       if !template.match(/(^|\/)\_/)
         save_stylesheet(File.join(file_dir, template), generate_css(template, file_dir))
       end
     end
   end
-  
+
   def copy_file(from, to)
     FileUtils.cp(from, to)
   end
@@ -43,7 +44,7 @@ module StaticMatic::BuildMixin
     File.open(path, 'w+') do |f|
       f << content
     end
-    
+
     puts "created #{path}"
   end
 end
